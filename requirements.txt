@@ -1,0 +1,4 @@
+requests==2.22.0
+validators==0.15.0
+python-telegram-bot==12.8
+boto3==1.14.11
