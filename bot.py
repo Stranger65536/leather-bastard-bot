@@ -6,7 +6,7 @@ from contextlib import closing
 from datetime import datetime
 from json import load
 from logging import basicConfig, INFO, getLogger, info
-from os import remove
+from os import remove, listdir
 from os.path import dirname, realpath, join
 from time import sleep
 
@@ -95,15 +95,18 @@ def aws_call(text):
         raise AwsFunctionError(response)
 
 
-def cleanup(f):
+def cleanup():
     """
     Cleans up files
     """
-    # noinspection PyBroadException
-    try:
-        remove(f)
-    except Exception:
-        pass
+    tmp_dir = dirname(realpath(__file__))
+    for file in listdir(tmp_dir):
+        # noinspection PyBroadException
+        try:
+            if "leather-bastard-" in file:
+                remove(join(tmp_dir, file))
+        except Exception:
+            pass
 
 
 sound = "1.0"
@@ -147,12 +150,13 @@ def echo(update, context):
         res = subprocess.run(["play", "-v", sound, "-t", "mp3", f],
                              check=True, shell=False)
         with open(f, "rb") as f:
-            bot.sendAudio(chat_id=ADMIN_CHAT_ID, audio=f,
-                          reply_to_message_id=update.message.message_id)
+            update.message.reply_audio(
+                audio=f,
+                reply_to_message_id=update.message.message_id)
     except Exception as e:
         update.message.reply_text("Oops! {}".format(e))
     finally:
-        cleanup(f)
+        cleanup()
 
 
 def main():
